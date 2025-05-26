@@ -1,46 +1,43 @@
-import { createServer } from 'node:http';
-import { readUsers } from './api/usersApi.js';
+import { createServer } from "node:http"
+import { readUsers, createUser, deleteUser, checkUserLogin } from "./api/usersApi.js"
+import { readProjects, createProject, deleteProject } from "./api/projectsApi.js"
 
 createServer(async (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Content-Type', 'application/json')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Origin, Authorization')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
 
-    let url;
-    if (req.url) {
-        url = new URL(req.url, `http://${req.headers.host}`);
-    } else {
-        console.log("req.url is undefined");
-        res.statusCode = 400; // Bad Request
-        res.end(JSON.stringify({ error: 'URL is undefined' }));
-        return;
-    }
+    const url = new URL(req.url, `http://${req.headers.host}`)
+    const method = req.method
+    let response = JSON.stringify([])
 
-    const method = req.method;
-    let response = {};
-
-    switch (url.pathname) {
-        case '/':
-            console.log("home");
-            response = { message: "Home" };
-            break;
-        case '/users':
-           if (method === 'GET') {
-                console.log("Users");
-                response = await readUsers();
-            }
-            break;
-        case '/projects':
-            console.log("Projets");
-            response = { message: "Projects" };
-            break;
+    switch (url.pathname)
+    {
+        case "/users":
+            if (method == "GET")
+                response = await readUsers()
+            if (method == "POST")
+                response = await createUser(req)
+            if (method == "DELETE")
+                response = await deleteUser(url.searchParams.get('id'))
+        break
+        case "/checkUser":
+            response = await checkUserLogin(url.searchParams.get('email'), url.searchParams.get('pass'))
+        break
+        case "/projects":
+            if (method == "GET")
+                response = await readProjects()
+            if (method == "POST")
+                response = await createProject(req)
+            if (method == "DELETE")
+                response = await deleteProject(url.searchParams.get('id'))
+        break
         default:
-            res.statusCode = 404;
-            response = { error: 'Not Found' };
+            response = null
+        break
     }
 
-    res.end(JSON.stringify(response));
-}).listen(3002, () => {
-    console.log("Server is running on port 3002");
-});
+    res.write(JSON.stringify(response))
+    res.end()
+}).listen(3002)

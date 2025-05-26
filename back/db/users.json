@@ -1,8 +1,1 @@
-[
-    {
-        "id": 1,
-        "email": "fidyfire@gmail.com",
-        "pass": "12345",
-        "isAdmin": true
-    }
-]
+[{"email":"titi@mail.fr","pass":"12345","isAdmin":false,"id":"752f0a7f2fb8a"},{"id":"1","email":"anthony@mail.fr","pass":"12345","isAdmin":true}]
